@@ -317,6 +317,18 @@
         </div>
       </div>
 
+      <!-- Team Overview nav -->
+      <div class="px-3 py-2 border-b border-slate-100">
+        <button @click="selectedMemberId = null"
+          :class="['w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors',
+            !selectedMemberId ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50']">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+          </svg>
+          Team Overview
+        </button>
+      </div>
+
       <!-- Member list header -->
       <div class="px-4 py-2.5 flex items-center justify-between border-b border-slate-100">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Team Members</span>
@@ -406,17 +418,141 @@
     <!-- ── MAIN CONTENT ────────────────────────────────────────── -->
     <main class="flex-1 overflow-y-auto bg-slate-50">
 
-      <!-- No member selected -->
-      <div v-if="!selectedMember" class="h-full flex items-center justify-center text-center p-8">
+      <!-- ── TEAM OVERVIEW (no member selected) ── -->
+      <div v-if="!selectedMember" class="p-6 space-y-5">
+
+        <!-- Header -->
         <div>
-          <div class="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-5">
-            <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </div>
-          <h2 class="text-lg font-bold text-slate-600 mb-2">Select a Team Member</h2>
-          <p class="text-slate-400 text-sm max-w-sm">Choose a member from the sidebar to view their Skills Matrix and IDP analysis, or click <strong>+</strong> to assign a new member.</p>
+          <h2 class="text-xl font-bold text-slate-800">Team Overview</h2>
+          <p class="text-sm text-slate-500 mt-0.5">{{ members.length }} members &middot; {{ selfSubmittedCount }} self-assessed</p>
         </div>
+
+        <!-- Summary stat cards -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+            <div class="text-2xl font-bold text-indigo-600">{{ members.length }}</div>
+            <div class="text-xs text-slate-500 mt-1">Team Members</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+            <div class="text-2xl font-bold text-emerald-600">{{ selfSubmittedCount }}</div>
+            <div class="text-xs text-slate-500 mt-1">Self-Assessed</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+            <div class="text-2xl font-bold text-blue-600">{{ teamOverallAvg }}</div>
+            <div class="text-xs text-slate-500 mt-1">Team Avg Score</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+            <div class="text-lg font-bold text-amber-600 truncate px-1">{{ teamGapRanking[0]?.gap > 0 ? teamGapRanking[0].name : '—' }}</div>
+            <div class="text-xs text-slate-500 mt-1">Top Gap Skill</div>
+          </div>
+        </div>
+
+        <!-- Middle row: Team Radar + Self-assessment status -->
+        <div class="grid grid-cols-2 gap-5">
+
+          <!-- Team average radar -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <h3 class="text-sm font-bold text-slate-700 mb-0.5">Team Average Radar</h3>
+            <p class="text-xs text-slate-400 mb-3">Manager Avg &nbsp;/&nbsp; Target Avg</p>
+            <div style="position:relative;height:280px;">
+              <canvas id="teamRadarCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Self-assessment status -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <h3 class="text-sm font-bold text-slate-700 mb-3">Self-Assessment Status</h3>
+            <div class="space-y-1.5">
+              <div v-for="m in members" :key="m.id" @click="selectMember(m.id)"
+                class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {{ m.name.charAt(0) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-slate-700 truncate">{{ m.name }}</div>
+                  <div class="text-xs text-slate-400 truncate">{{ m.position }}</div>
+                </div>
+                <span v-if="m.selfSubmitted"
+                  class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 flex-shrink-0">✓ Done</span>
+                <span v-else
+                  class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200 flex-shrink-0">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skill gap ranking -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <h3 class="text-sm font-bold text-slate-700 mb-4">Team Skill Gap Ranking
+            <span class="text-xs font-normal text-slate-400 ml-1">Avg Target &minus; Avg Manager score</span>
+          </h3>
+          <div class="space-y-3">
+            <div v-for="skill in teamGapRanking" :key="skill.name" class="flex items-center gap-3">
+              <div class="w-36 text-xs font-medium text-slate-600 truncate flex-shrink-0">{{ skill.name }}</div>
+              <div class="flex-1 h-6 bg-slate-100 rounded-lg overflow-hidden relative">
+                <div class="absolute inset-y-0 left-0 bg-indigo-400 rounded-lg transition-all"
+                  :style="`width:${skill.managerAvg / 5 * 100}%`"></div>
+                <div class="absolute inset-y-1 w-px bg-amber-500"
+                  :style="`left:${skill.targetAvg / 5 * 100}%`"></div>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs flex-shrink-0 w-36">
+                <span class="text-indigo-600 font-bold">{{ skill.managerAvg.toFixed(1) }}</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-amber-600">{{ skill.targetAvg.toFixed(1) }}</span>
+                <span v-if="skill.gap > 0" class="text-red-400 font-bold ml-1">&minus;{{ skill.gap.toFixed(1) }}</span>
+                <span v-else class="text-emerald-500 font-bold ml-1">✓</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-5 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 bg-indigo-400 rounded"></span>Manager Avg</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block w-px h-4 bg-amber-500"></span>Target Avg</span>
+          </div>
+        </div>
+
+        <!-- Member skills heatmap -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-700">Team Skills Heatmap
+              <span class="text-xs font-normal text-slate-400 ml-1">(Manager scores &middot; click row to view member)</span>
+            </h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left px-4 py-2.5 font-semibold text-slate-500 sticky left-0 bg-slate-50">Member</th>
+                  <th v-for="s in skillsList" :key="s.name"
+                    class="px-3 py-2.5 font-semibold text-slate-500 text-center whitespace-nowrap">
+                    {{ s.name.split(' ')[0] }}
+                  </th>
+                  <th class="px-3 py-2.5 font-semibold text-slate-500 text-center">Avg</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="m in members" :key="m.id" @click="selectMember(m.id)"
+                  class="border-t border-slate-100 cursor-pointer hover:bg-indigo-50 transition-colors">
+                  <td class="px-4 py-2 font-semibold text-slate-700 whitespace-nowrap sticky left-0 bg-white">{{ m.name }}</td>
+                  <td v-for="skill in m.skills" :key="skill.name" class="px-2 py-2 text-center">
+                    <span :class="['inline-flex w-8 h-8 rounded-lg items-center justify-center font-bold text-xs', scoreClass(skill.manager)]">
+                      {{ skill.manager || '—' }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center font-bold text-indigo-600">{{ memberManagerAvg(m) }}</td>
+                </tr>
+                <!-- Team avg row -->
+                <tr class="border-t-2 border-slate-200 bg-slate-50">
+                  <td class="px-4 py-2 font-bold text-slate-600 sticky left-0 bg-slate-50">Team Avg</td>
+                  <td v-for="skill in teamSkillAvgs" :key="skill.name" class="px-2 py-2 text-center">
+                    <span class="font-semibold text-slate-600">{{ skill.managerAvg > 0 ? skill.managerAvg.toFixed(1) : '—' }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-center font-bold text-indigo-600">{{ teamOverallAvg }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <!-- Member detail -->
@@ -952,6 +1088,7 @@ createApp({
 
       // Radar chart
       radarChart: null,
+      teamRadarChart: null,
 
       // GitHub sync
       // ⚠️ SENSITIVE – LOCAL ONLY: ghToken stays in sessionStorage, NEVER uploaded to data.json
@@ -981,6 +1118,22 @@ createApp({
     teamOverallAvg() {
       const all = this.members.flatMap(m => m.skills.map(s => s.manager).filter(v => v > 0));
       return all.length ? (all.reduce((a, b) => a + b, 0) / all.length).toFixed(1) : '—';
+    },
+    skillsList() { return SKILLS; },
+    selfSubmittedCount() { return this.members.filter(m => m.selfSubmitted).length; },
+    teamSkillAvgs() {
+      return SKILLS.map(s => {
+        const ms = this.members.map(m => m.skills.find(sk => sk.name === s.name)?.manager || 0).filter(v => v > 0);
+        const ss = this.members.map(m => m.skills.find(sk => sk.name === s.name)?.self || 0).filter(v => v > 0);
+        const ts = this.members.map(m => m.skills.find(sk => sk.name === s.name)?.target ?? 3);
+        const mAvg = ms.length ? ms.reduce((a,b) => a+b,0)/ms.length : 0;
+        const sAvg = ss.length ? ss.reduce((a,b) => a+b,0)/ss.length : 0;
+        const tAvg = ts.length ? ts.reduce((a,b) => a+b,0)/ts.length : 3;
+        return { name: s.name, managerAvg: mAvg, selfAvg: sAvg, targetAvg: tAvg, gap: Math.max(0, tAvg - mAvg) };
+      });
+    },
+    teamGapRanking() {
+      return [...this.teamSkillAvgs].sort((a, b) => b.gap - a.gap);
     },
     blindSpots() {
       if (!this.selectedMember) return [];
@@ -1045,12 +1198,20 @@ createApp({
         } catch (_) { /* ignore malformed storage */ }
         // ────────────────────────────────────────────────────────────────────
         localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
-        nextTick(() => this.updateRadar());
+        if (this.selectedMemberId) {
+          nextTick(() => this.updateRadar());
+        } else {
+          nextTick(() => this.updateTeamRadar());
+        }
       }
     },
-    selectedMemberId() {
+    selectedMemberId(val) {
       this.activeTab = 'Radar Chart';
-      this.scheduleInitRadar();
+      if (val) {
+        this.scheduleInitRadar();
+      } else {
+        this.scheduleInitTeamRadar();
+      }
     },
     activeTab(val) {
       if (val === 'Radar Chart') this.scheduleInitRadar();
@@ -1404,6 +1565,70 @@ createApp({
       this.radarChart.update('active');
     },
 
+    /* ── Team Overview radar ──────────────────────────── */
+    scheduleInitTeamRadar() {
+      if (this._teamRafPending) return;
+      this._teamRafPending = true;
+      requestAnimationFrame(() => {
+        this._teamRafPending = false;
+        this.initTeamRadar();
+      });
+    },
+    initTeamRadar() {
+      const canvas = document.getElementById('teamRadarCanvas');
+      if (!canvas) return;
+      if (this.teamRadarChart) { this.teamRadarChart.destroy(); this.teamRadarChart = null; }
+      const avgs = this.teamSkillAvgs;
+      this.teamRadarChart = new Chart(canvas, {
+        type: 'radar',
+        data: {
+          labels: avgs.map(s => s.name.replace(' ', '\n')),
+          datasets: [
+            {
+              label: 'Manager Avg',
+              data: avgs.map(s => s.managerAvg > 0 ? +s.managerAvg.toFixed(2) : null),
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99,102,241,0.12)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#6366f1',
+            },
+            {
+              label: 'Target Avg',
+              data: avgs.map(s => +s.targetAvg.toFixed(2)),
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245,158,11,0.07)',
+              borderWidth: 2,
+              borderDash: [5, 3],
+              pointRadius: 3,
+              pointBackgroundColor: '#f59e0b',
+            },
+          ],
+        },
+        options: {
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0, max: 5,
+              ticks: { stepSize: 1, font: { size: 10 }, backdropColor: 'transparent' },
+              grid: { color: 'rgba(0,0,0,0.06)' },
+              pointLabels: { font: { size: 11 } },
+            },
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          },
+        },
+      });
+    },
+    updateTeamRadar() {
+      if (!this.teamRadarChart) return;
+      const avgs = this.teamSkillAvgs;
+      this.teamRadarChart.data.datasets[0].data = avgs.map(s => s.managerAvg > 0 ? +s.managerAvg.toFixed(2) : null);
+      this.teamRadarChart.data.datasets[1].data = avgs.map(s => +s.targetAvg.toFixed(2));
+      this.teamRadarChart.update('active');
+    },
+
     /* ── GitHub API persistence ───────────────────────── */
 
     /**
@@ -1643,8 +1868,12 @@ createApp({
   },
 
   mounted() {
-    if (this.appMode === 'admin' && this.selectedMemberId) {
-      this.scheduleInitRadar();
+    if (this.appMode === 'admin') {
+      if (this.selectedMemberId) {
+        this.scheduleInitRadar();
+      } else {
+        this.scheduleInitTeamRadar();
+      }
     }
 
     // Load data from GitHub on admin startup (if PAT is stored)

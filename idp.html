@@ -1904,9 +1904,10 @@ createApp({
 
     goAdmin() {
       if (this.landingToken.trim() === ADMIN_TOKEN) {
-        window.location.href = `idp.html?mode=admin&token=${ADMIN_TOKEN}`;
+        window.location.search = `?mode=admin&token=${ADMIN_TOKEN}`;
       } else {
         this.landingError = 'Incorrect admin token.';
+        setTimeout(() => { this.landingError = ''; }, 3000);
       }
     },
 

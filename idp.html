@@ -1964,7 +1964,7 @@ createApp({
     // — public raw URL works on any device without PAT (read-only for public repos)
     // — if PAT is available, also do authenticated load (scans submissions/)
     if (this.appMode === 'admin') {
-      fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`)
+      fetch(`https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (!data || !Array.isArray(data.teams)) return;
@@ -1998,7 +1998,7 @@ createApp({
     // Self mode: fetch public data.json to get members + config.submitKey (no auth needed)
     if (this.appMode === 'self') {
       this.selfLoading = true;
-      fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`)
+      fetch(`https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (!data) return;

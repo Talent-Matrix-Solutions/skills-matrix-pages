@@ -433,6 +433,14 @@
             Last: {{ new Date(ghLastSynced).toLocaleString() }}
           </p>
           <div class="flex gap-1.5">
+            <button @click="loadFromCloud"
+              :disabled="ghSyncing"
+              class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 rounded-lg transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M12 3v13.5m-4.5-4.5L12 16.5l4.5-4.5"/>
+              </svg>
+              Load
+            </button>
             <button @click="saveToGitHub"
               :disabled="ghSyncing"
               class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg transition-colors">
@@ -1751,6 +1759,31 @@ createApp({
       };
     },
 
+    async loadFromCloud() {
+      const fetchUrl = `https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`;
+      this.ghSyncStatus = 'loading';
+      try {
+        const r = await fetch(fetchUrl);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
+        if (!data || !Array.isArray(data.teams) || data.teams.length === 0)
+          throw new Error('No team data in response');
+        this.members = data.teams.map(m => ({
+          ...m,
+          selfSubmitted: m.selfSubmitted || false,
+          selfComment: m.selfComment || '',
+        }));
+        this.ghSyncStatus = 'ok';
+        this.showToast(`Loaded ${data.teams.length} members from cloud ✓`, 'success');
+        if (this.ghToken) this.loadFromGitHub();
+      } catch (err) {
+        console.warn('[loadFromCloud]', err);
+        this.ghSyncStatus = 'error';
+        this.showToast('Cloud load failed: ' + err.message, 'error');
+        if (this.ghToken) this.loadFromGitHub();
+      }
+    },
+
     async loadFromGitHub() {
       if (!this.ghToken) return;
       this.ghSyncStatus = 'loading';
@@ -1960,31 +1993,9 @@ createApp({
       }
     }
 
-    // Load data from GitHub on admin startup (public Pages URL, no PAT needed for reading)
+    // Load data from GitHub on admin startup
     if (this.appMode === 'admin') {
-      this.ghSyncStatus = 'loading';
-      fetch(`https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`)
-        .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
-        .then(data => {
-          if (!data || !Array.isArray(data.teams) || data.teams.length === 0)
-            throw new Error('No team data in response');
-          // Server is source of truth — replace local members entirely
-          this.members = data.teams.map(m => ({
-            ...m,
-            selfSubmitted: m.selfSubmitted || false,
-            selfComment: m.selfComment || '',
-          }));
-          this.ghSyncStatus = 'ok';
-          this.showToast('Loaded from cloud ✓', 'success');
-          // Also do authenticated load if PAT is available (scans submissions/)
-          if (this.ghToken) this.loadFromGitHub();
-        })
-        .catch(err => {
-          console.warn('[admin init] public fetch failed:', err);
-          this.ghSyncStatus = '';
-          // Fall back to PAT-based load
-          if (this.ghToken) this.loadFromGitHub();
-        });
+      this.loadFromCloud();
     }
 
     // Self mode: fetch public data.json to get members + config.submitKey (no auth needed)

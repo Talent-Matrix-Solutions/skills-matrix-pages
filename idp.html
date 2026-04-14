@@ -1960,9 +1960,39 @@ createApp({
       }
     }
 
-    // Load data from GitHub on admin startup (if PAT is stored)
+    // Load data from GitHub on admin startup
+    // — public raw URL works on any device without PAT (read-only for public repos)
+    // — if PAT is available, also do authenticated load (scans submissions/)
     if (this.appMode === 'admin') {
-      this.loadFromGitHub();
+      fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data || !Array.isArray(data.teams)) return;
+          data.teams.forEach(remote => {
+            const local = this.members.find(m => m.id === remote.id);
+            if (local) {
+              local.name = remote.name;
+              local.position = remote.position;
+              if (remote.selfSubmitted) {
+                local.selfSubmitted = true;
+                local.selfComment = remote.selfComment || local.selfComment;
+              }
+              remote.skills.forEach(rs => {
+                const ls = local.skills.find(s => s.name === rs.name);
+                if (ls) { ls.manager = rs.manager; ls.target = rs.target; if (rs.self > 0 && ls.self === 0) ls.self = rs.self; }
+              });
+            } else {
+              this.members.push({ ...remote, selfSubmitted: remote.selfSubmitted || false, selfComment: remote.selfComment || '' });
+            }
+          });
+          this.ghSyncStatus = 'ok';
+          // Also do authenticated load if PAT is available (scans submissions/)
+          if (this.ghToken) this.loadFromGitHub();
+        })
+        .catch(() => {
+          // Fall back to PAT-based load if raw fetch fails
+          if (this.ghToken) this.loadFromGitHub();
+        });
     }
 
     // Self mode: fetch public data.json to get members + config.submitKey (no auth needed)

@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Skills Matrix & IDP Assessment System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -1760,12 +1763,15 @@ createApp({
     },
 
     async loadFromCloud() {
-      const fetchUrl = `https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`;
       this.ghSyncStatus = 'loading';
+      this.showToast('Loading from cloud…', 'warn');
+      // Use GitHub API (works for public repos, no auth needed)
+      const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
       try {
-        const r = await fetch(fetchUrl);
+        const r = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github+json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const data = await r.json();
+        const json = await r.json();
+        const data = JSON.parse(atob(json.content.replace(/\n/g, '')));
         if (!data || !Array.isArray(data.teams) || data.teams.length === 0)
           throw new Error('No team data in response');
         this.members = data.teams.map(m => ({
@@ -1774,7 +1780,7 @@ createApp({
           selfComment: m.selfComment || '',
         }));
         this.ghSyncStatus = 'ok';
-        this.showToast(`Loaded ${data.teams.length} members from cloud ✓`, 'success');
+        this.showToast(`Loaded ${data.teams.length} members ✓`, 'success');
         if (this.ghToken) this.loadFromGitHub();
       } catch (err) {
         console.warn('[loadFromCloud]', err);
@@ -2001,17 +2007,17 @@ createApp({
     // Self mode: fetch public data.json to get members + config.submitKey (no auth needed)
     if (this.appMode === 'self') {
       this.selfLoading = true;
-      fetch(`https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`)
-        .then(r => r.ok ? r.json() : null)
+      const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+      fetch(apiUrl, { headers: { Accept: 'application/vnd.github+json' } })
+        .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+        .then(json => JSON.parse(atob(json.content.replace(/\n/g, ''))))
         .then(data => {
           if (!data) return;
-          // Load submitKey
           if (data?.config?.submitKey) {
             const decoded = deobfuscateKey(data.config.submitKey);
             this.memberWriteKey = decoded;
             localStorage.setItem('gh-member-write-key', decoded);
           }
-          // Load members so self-mode can find the user on any device
           if (Array.isArray(data.teams) && data.teams.length) {
             this.members = data.teams;
           }

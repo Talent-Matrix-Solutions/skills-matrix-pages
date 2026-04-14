@@ -214,8 +214,14 @@
 
     <!-- Self content -->
     <main class="max-w-3xl mx-auto p-6">
+      <!-- Loading -->
+      <div v-if="selfLoading" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
+        <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-slate-400 text-sm">Loading your assessment…</p>
+      </div>
+
       <!-- Not found -->
-      <div v-if="!selfMember" class="bg-white rounded-2xl shadow-sm border border-red-200 p-10 text-center">
+      <div v-else-if="!selfMember" class="bg-white rounded-2xl shadow-sm border border-red-200 p-10 text-center">
         <div class="text-5xl mb-4">🔍</div>
         <h2 class="text-lg font-bold text-slate-700 mb-2">User Not Found</h2>
         <p class="text-slate-400 text-sm">ID <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">{{ selfUserId }}</code> does not exist. Please contact your administrator.</p>
@@ -1160,6 +1166,7 @@ createApp({
       ghLastSynced: localStorage.getItem('gh-last-synced') || '',
       // Member write key — low-risk, stored in localStorage + saved in data.json config.submitKey
       memberWriteKey: localStorage.getItem('gh-member-write-key') || '',
+      selfLoading: false,
       ghWriteKeyInput: '',
       showGhTokenModal: false,
       ghTokenInput: '',
@@ -1958,18 +1965,26 @@ createApp({
       this.loadFromGitHub();
     }
 
-    // Self mode: fetch public data.json to get config.submitKey (no auth needed)
-    if (this.appMode === 'self' && !this.memberWriteKey) {
+    // Self mode: fetch public data.json to get members + config.submitKey (no auth needed)
+    if (this.appMode === 'self') {
+      this.selfLoading = true;
       fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
+          if (!data) return;
+          // Load submitKey
           if (data?.config?.submitKey) {
             const decoded = deobfuscateKey(data.config.submitKey);
             this.memberWriteKey = decoded;
             localStorage.setItem('gh-member-write-key', decoded);
           }
+          // Load members so self-mode can find the user on any device
+          if (Array.isArray(data.teams) && data.teams.length) {
+            this.members = data.teams;
+          }
         })
-        .catch(() => {}); // silently ignore — token fallback still available
+        .catch(() => {})
+        .finally(() => { this.selfLoading = false; });
     }
 
     // ── Cross-tab sync: when the self-assessment tab writes to localStorage,

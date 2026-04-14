@@ -1,0 +1,338 @@
+{
+  "metadata": {
+    "appVersion": "2.0",
+    "lastSynced": "2026-04-14T01:30:06.638Z",
+    "totalMembers": 5
+  },
+  "settings": {
+    "skills": [
+      {
+        "name": "CAD Software",
+        "desc": "CAD design tools: SolidWorks, AutoCAD, Catia"
+      },
+      {
+        "name": "FEA Analysis",
+        "desc": "Finite Element Analysis: ANSYS, Abaqus"
+      },
+      {
+        "name": "DFM Design",
+        "desc": "Design for Manufacturability principles"
+      },
+      {
+        "name": "Mechatronics",
+        "desc": "Integration of mechanical & electrical systems"
+      },
+      {
+        "name": "Project Planning",
+        "desc": "Scheduling, resource & risk management"
+      },
+      {
+        "name": "Communication",
+        "desc": "Verbal, written & cross-team collaboration"
+      },
+      {
+        "name": "Problem Solving",
+        "desc": "Root cause analysis & creative resolution"
+      },
+      {
+        "name": "Teamwork",
+        "desc": "Collaboration, leadership & interpersonal skills"
+      }
+    ]
+  },
+  "config": {
+    "submitKey": "Dg0ERRgDKwIIDHIDAXB5XSpCbiRRLic/HVpTB2VzD1MVcjwRLRdRT2hCAQJGOQ5AZAIZRUssK39RQgdbLRI3e1k0NUFdM15DSXpSJSBHZiEuI0U4LGF+RVtlIygg"
+  },
+  "teams": [
+    {
+      "id": "USR_ZW001",
+      "name": "Zhang Wei",
+      "position": "Mechanical Engineer",
+      "selfSubmitted": false,
+      "selfComment": "",
+      "updatedAt": "2026-04-14T01:30:06.638Z",
+      "skills": [
+        {
+          "name": "CAD Software",
+          "self": 0,
+          "manager": 3,
+          "target": 4
+        },
+        {
+          "name": "FEA Analysis",
+          "self": 0,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "DFM Design",
+          "self": 0,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "Mechatronics",
+          "self": 0,
+          "manager": 1,
+          "target": 2
+        },
+        {
+          "name": "Project Planning",
+          "self": 0,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "Communication",
+          "self": 0,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Problem Solving",
+          "self": 0,
+          "manager": 3,
+          "target": 4
+        },
+        {
+          "name": "Teamwork",
+          "self": 0,
+          "manager": 3,
+          "target": 4
+        }
+      ]
+    },
+    {
+      "id": "USR_YHL36Q7",
+      "name": "Mike",
+      "position": "Team Member",
+      "selfSubmitted": true,
+      "selfComment": "",
+      "updatedAt": "2026-04-14T01:30:06.638Z",
+      "skills": [
+        {
+          "name": "CAD Software",
+          "self": 3,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "FEA Analysis",
+          "self": 4,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "DFM Design",
+          "self": 4,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "Mechatronics",
+          "self": 3,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "Project Planning",
+          "self": 3,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "Communication",
+          "self": 3,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Problem Solving",
+          "self": 3,
+          "manager": 2,
+          "target": 3
+        },
+        {
+          "name": "Teamwork",
+          "self": 4,
+          "manager": 2,
+          "target": 3
+        }
+      ]
+    },
+    {
+      "id": "USR_WEYL4H0",
+      "name": "Jennifer",
+      "position": "Team Member",
+      "selfSubmitted": true,
+      "selfComment": "",
+      "updatedAt": "2026-04-14T01:30:06.638Z",
+      "skills": [
+        {
+          "name": "CAD Software",
+          "self": 3,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "FEA Analysis",
+          "self": 4,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "DFM Design",
+          "self": 5,
+          "manager": 5,
+          "target": 3
+        },
+        {
+          "name": "Mechatronics",
+          "self": 5,
+          "manager": 5,
+          "target": 3
+        },
+        {
+          "name": "Project Planning",
+          "self": 5,
+          "manager": 5,
+          "target": 3
+        },
+        {
+          "name": "Communication",
+          "self": 5,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "Problem Solving",
+          "self": 4,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Teamwork",
+          "self": 4,
+          "manager": 4,
+          "target": 3
+        }
+      ]
+    },
+    {
+      "id": "USR_Y0JQMQB",
+      "name": "Alex",
+      "position": "Team Member",
+      "selfSubmitted": true,
+      "selfComment": "",
+      "updatedAt": "2026-04-14T01:30:06.638Z",
+      "skills": [
+        {
+          "name": "CAD Software",
+          "self": 3,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "FEA Analysis",
+          "self": 3,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "DFM Design",
+          "self": 4,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Mechatronics",
+          "self": 4,
+          "manager": 4,
+          "target": 3
+        },
+        {
+          "name": "Project Planning",
+          "self": 4,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Communication",
+          "self": 4,
+          "manager": 5,
+          "target": 3
+        },
+        {
+          "name": "Problem Solving",
+          "self": 4,
+          "manager": 3,
+          "target": 3
+        },
+        {
+          "name": "Teamwork",
+          "self": 4,
+          "manager": 4,
+          "target": 3
+        }
+      ]
+    },
+    {
+      "id": "USR_YJ19K3O",
+      "name": "Henning",
+      "position": "QEA",
+      "selfSubmitted": false,
+      "selfComment": "",
+      "updatedAt": "2026-04-14T01:30:06.638Z",
+      "skills": [
+        {
+          "name": "CAD Software",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "FEA Analysis",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "DFM Design",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "Mechatronics",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "Project Planning",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "Communication",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "Problem Solving",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        },
+        {
+          "name": "Teamwork",
+          "self": 0,
+          "manager": 0,
+          "target": 3
+        }
+      ]
+    }
+  ]
+}

@@ -151,6 +151,7 @@
         </div>
         <div class="flex gap-2">
           <input v-model="landingToken" type="password" placeholder="Enter admin token…"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
             @keyup.enter="goAdmin" />
           <button @click="goAdmin"
@@ -1078,7 +1079,15 @@ createApp({
     // Determine app mode
     let appMode = 'denied';
     if (!mode) appMode = 'landing';
-    else if (mode === 'admin' && token === ADMIN_TOKEN) appMode = 'admin';
+    else if (mode === 'admin' && (token === ADMIN_TOKEN || sessionStorage.getItem('admin-authed') === '1')) {
+      appMode = 'admin';
+      sessionStorage.setItem('admin-authed', '1');
+      // Clean token from URL without reloading
+      if (token) {
+        const cleanUrl = window.location.pathname + '?mode=admin';
+        window.history.replaceState(null, '', cleanUrl);
+      }
+    }
     else if (mode === 'self' && userId) appMode = 'self';
 
     // Load members from localStorage
@@ -1905,7 +1914,13 @@ createApp({
     goAdmin() {
       const entered = this.landingToken.trim();
       if (!entered) { this.landingError = 'Please enter the admin token.'; return; }
-      window.location.search = `?mode=admin&token=${encodeURIComponent(entered)}`;
+      if (entered === ADMIN_TOKEN) {
+        sessionStorage.setItem('admin-authed', '1');
+        window.location.search = '?mode=admin';
+      } else {
+        this.landingError = 'Incorrect admin token.';
+        this.landingToken = '';
+      }
     },
 
     confirmGhToken() {

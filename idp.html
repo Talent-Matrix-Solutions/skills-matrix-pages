@@ -1904,11 +1904,8 @@ createApp({
 
     goAdmin() {
       const entered = this.landingToken.trim();
-      if (entered === ADMIN_TOKEN) {
-        window.location.search = `?mode=admin&token=${ADMIN_TOKEN}`;
-      } else {
-        this.landingError = `Incorrect token (entered ${entered.length} chars: "${entered}")`;
-      }
+      if (!entered) { this.landingError = 'Please enter the admin token.'; return; }
+      window.location.search = `?mode=admin&token=${encodeURIComponent(entered)}`;
     },
 
     confirmGhToken() {

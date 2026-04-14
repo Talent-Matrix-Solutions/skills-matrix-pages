@@ -1960,37 +1960,29 @@ createApp({
       }
     }
 
-    // Load data from GitHub on admin startup
-    // — public raw URL works on any device without PAT (read-only for public repos)
-    // — if PAT is available, also do authenticated load (scans submissions/)
+    // Load data from GitHub on admin startup (public Pages URL, no PAT needed for reading)
     if (this.appMode === 'admin') {
+      this.ghSyncStatus = 'loading';
       fetch(`https://${GH_OWNER}.github.io/${GH_REPO}/${GH_FILE}?t=${Date.now()}`)
-        .then(r => r.ok ? r.json() : null)
+        .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
         .then(data => {
-          if (!data || !Array.isArray(data.teams)) return;
-          data.teams.forEach(remote => {
-            const local = this.members.find(m => m.id === remote.id);
-            if (local) {
-              local.name = remote.name;
-              local.position = remote.position;
-              if (remote.selfSubmitted) {
-                local.selfSubmitted = true;
-                local.selfComment = remote.selfComment || local.selfComment;
-              }
-              remote.skills.forEach(rs => {
-                const ls = local.skills.find(s => s.name === rs.name);
-                if (ls) { ls.manager = rs.manager; ls.target = rs.target; if (rs.self > 0 && ls.self === 0) ls.self = rs.self; }
-              });
-            } else {
-              this.members.push({ ...remote, selfSubmitted: remote.selfSubmitted || false, selfComment: remote.selfComment || '' });
-            }
-          });
+          if (!data || !Array.isArray(data.teams) || data.teams.length === 0)
+            throw new Error('No team data in response');
+          // Server is source of truth — replace local members entirely
+          this.members = data.teams.map(m => ({
+            ...m,
+            selfSubmitted: m.selfSubmitted || false,
+            selfComment: m.selfComment || '',
+          }));
           this.ghSyncStatus = 'ok';
+          this.showToast('Loaded from cloud ✓', 'success');
           // Also do authenticated load if PAT is available (scans submissions/)
           if (this.ghToken) this.loadFromGitHub();
         })
-        .catch(() => {
-          // Fall back to PAT-based load if raw fetch fails
+        .catch(err => {
+          console.warn('[admin init] public fetch failed:', err);
+          this.ghSyncStatus = '';
+          // Fall back to PAT-based load
           if (this.ghToken) this.loadFromGitHub();
         });
     }

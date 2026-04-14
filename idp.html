@@ -1903,11 +1903,11 @@ createApp({
     },
 
     goAdmin() {
-      if (this.landingToken.trim() === ADMIN_TOKEN) {
+      const entered = this.landingToken.trim();
+      if (entered === ADMIN_TOKEN) {
         window.location.search = `?mode=admin&token=${ADMIN_TOKEN}`;
       } else {
-        this.landingError = 'Incorrect admin token.';
-        setTimeout(() => { this.landingError = ''; }, 3000);
+        this.landingError = `Incorrect token (entered ${entered.length} chars: "${entered}")`;
       }
     },
 
